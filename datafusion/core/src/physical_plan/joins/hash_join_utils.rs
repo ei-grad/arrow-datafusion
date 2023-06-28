@@ -103,7 +103,7 @@ pub struct SymmetricJoinHashMap(pub RawTable<(u64, SmallVec<[u64; 1]>)>);
 impl JoinHashMap {
     pub(crate) fn with_capacity(capacity: usize) -> Self {
         JoinHashMap {
-            map: RawTable::with_capacity(capacity),
+            map: RawTable::with_capacity(capacity * 2),
             next: vec![0; capacity],
         }
     }
