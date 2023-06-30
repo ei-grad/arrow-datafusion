@@ -84,6 +84,40 @@ macro_rules! hash_float_value {
 }
 hash_float_value!((half::f16, u16), (f32, u32), (f64, u64));
 
+fn hash_array_primitve<T>(
+    array: &PrimitiveArray<T>,
+    random_state: &RandomState,
+    hashes_buffer: &mut [u64],
+    multi_col: bool,
+) where
+    T: ArrowPrimitiveType,
+    <T as arrow_array::ArrowPrimitiveType>::Native: HashValue,
+{
+    if array.null_count() == 0 {
+        if multi_col {
+            for (hash, &val) in hashes_buffer.iter_mut().zip(array.values().iter()) {
+                *hash = combine_hashes(val.hash_one(&random_state), *hash);
+            }
+        } else {
+            for (hash, &val) in hashes_buffer.iter_mut().zip(array.values().iter()) {
+                *hash = val.hash_one(&random_state);
+            }
+        }
+    } else if multi_col {
+        for (i, hash) in hashes_buffer.iter_mut().enumerate() {
+            if !array.is_null(i) {
+                *hash = combine_hashes(array.value(i).hash_one(random_state), *hash);
+            }
+        }
+    } else {
+        for (i, hash) in hashes_buffer.iter_mut().enumerate() {
+            if !array.is_null(i) {
+                *hash = array.value(i).hash_one(random_state);
+            }
+        }
+    }
+}
+
 fn hash_array<T>(
     array: T,
     random_state: &RandomState,
@@ -215,7 +249,7 @@ pub fn create_hashes<'a>(
     for col in arrays {
         let array = col.as_ref();
         downcast_primitive_array! {
-            array => hash_array(array, random_state, hashes_buffer, multi_col),
+            array => hash_array_primitve(array, random_state, hashes_buffer, multi_col),
             DataType::Null => hash_null(random_state, hashes_buffer, multi_col),
             DataType::Boolean => hash_array(as_boolean_array(array)?, random_state, hashes_buffer, multi_col),
             DataType::Utf8 => hash_array(as_string_array(array)?, random_state, hashes_buffer, multi_col),
@@ -228,11 +262,11 @@ pub fn create_hashes<'a>(
             }
             DataType::Decimal128(_, _) => {
                 let array = as_primitive_array::<Decimal128Type>(array)?;
-                hash_array(array, random_state, hashes_buffer, multi_col)
+                hash_array_primitve(array, random_state, hashes_buffer, multi_col)
             }
             DataType::Decimal256(_, _) => {
                 let array = as_primitive_array::<Decimal256Type>(array)?;
-                hash_array(array, random_state, hashes_buffer, multi_col)
+                hash_array_primitve(array, random_state, hashes_buffer, multi_col)
             }
             DataType::Dictionary(_, _) => downcast_dictionary_array! {
                 array => hash_dictionary(array, random_state, hashes_buffer, multi_col)?,
