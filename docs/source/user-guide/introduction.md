@@ -109,8 +109,7 @@ Here are some active projects using DataFusion:
 - [Parseable](https://github.com/parseablehq/parseable) Log storage and observability platform
 - [qv](https://github.com/timvw/qv) Quickly view your data
 - [bdt](https://github.com/andygrove/bdt) Boring Data Tool
-- [Restate](https://github.com/restatedev) Easily build resilient applications using distributed durable async/await
-- [ROAPI](https://github.com/roapi/roapi)
+- [ROAPI](https://github.com/roapi/roapi)  Create full-fledged APIs for slowly moving datasets without writing a single line of code
 - [Seafowl](https://github.com/splitgraph/seafowl) CDN-friendly analytical database
 - [Synnada](https://synnada.ai/) Streaming-first framework for data products
 - [VegaFusion](https://vegafusion.io/) Server-side acceleration for the [Vega](https://vega.github.io/) visualization grammar
